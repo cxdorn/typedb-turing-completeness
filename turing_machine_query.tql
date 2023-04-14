@@ -1,0 +1,68 @@
+## USAGE:
+##
+##    1. Build your term (will be inferred data in "term" relation), see examples below.
+##    2. Query for computation sequence starting at that term
+##
+
+## Example 1 (syntax check, no computation).
+## Query for terms $t constructed from symbols $s using the "symbol-term" rule
+# match $t (symbol: $s) isa term; get $t;
+## WORKS!
+
+## Example 2 (computation has halted):
+## Query whether the term "K" has any computation steps
+#match { 
+#    $s isa symbol, has name "K";
+#    $t (symbol: $s) isa term;
+#    $u isa term;
+#    (in: $t, out: $u) isa computation-step; };
+#get $u;
+## WORKS!
+
+## Example 3 (syntax check "KK", no computation).
+## Query for the term "KK"
+#match { 
+#   $s isa symbol, has name "K";
+#   $t (symbol: $s) isa term;
+#   $tt (term-left: $t, term-right: $t) isa term; };
+#get $tt;
+## WORKS or FAILS
+
+## Example 4 (evaluate the term "II").
+## Check whether the term "II" has has computations steps (it should, "II" -> "I")
+#match { 
+#    $s isa symbol, has name "I";
+#    $t (symbol: $s) isa term;
+#    $tt (term-left: $t, term-right: $t) isa term;
+#    $r isa symbol, has name $m;
+#    $u (symbol: $r) isa term;
+#    (in: $tt, out: $u) isa computation-step; };
+#get $u, $r, $m; limit 1;
+## WORKS or FAILS
+
+## Example 5 (evaluate the term "KKK" -> "K").
+#match { 
+#    $s isa symbol, has name "K";
+#    $t (symbol: $s) isa term;
+#    $tt (term-left: $t, term-right: $t) isa term;
+#    $ttt (term-left: $tt, term-right: $t) isa term;
+#    $r isa symbol, has name $m;
+#    $u (symbol: $r) isa term;
+#    (in: $ttt, out: $u) isa computation-step; };
+#get $u, $r, $m; limit 1;
+## WORKS or FAILS
+
+## Example 6 (evaluate the term "(KKK)(KKK)(KKK)" -> ... -> "K").
+match { 
+    $s isa symbol, has name "K";
+    $t (symbol: $s) isa term;
+    $tt (term-left: $t, term-right: $t) isa term;
+    $ttt (term-left: $tt, term-right: $t) isa term;
+    $2ttt (term-left: $ttt, term-right: $ttt) isa term;
+    $3ttt (term-left: $2ttt, term-right: $ttt) isa term;
+    $u isa term;
+    (in: $3ttt, out: $u) isa computation-sequence; };
+get $u; limit 4;
+## limit 2 WORKS or FAILS
+## limit 4 WORKS (runs for 14 sec on M2 Mac) or FAILS sometimes
+## Limit 4 seems to find the full reduction as well

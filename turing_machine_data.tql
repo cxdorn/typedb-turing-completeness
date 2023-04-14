@@ -1,0 +1,5 @@
+# insert base symbol
+
+insert $s isa symbol, has name "S";
+insert $s isa symbol, has name "K";
+insert $s isa symbol, has name "I";

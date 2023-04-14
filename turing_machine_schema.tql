@@ -1,0 +1,99 @@
+define    
+    computation-step sub relation,
+        relates in,
+        relates out;
+    computation-sequence sub relation,
+        relates in,
+        relates out; # could merge steps and sequence; but for clarity keep separate 
+    term sub relation,
+        relates symbol,
+        relates term-left,
+        relates term-right,
+        plays term:term-left,
+        plays term:term-right,
+        plays computation-step:in,
+        plays computation-step:out,
+        plays computation-sequence:in,
+        plays computation-sequence:out;
+    name sub attribute, value string;
+    symbol sub entity,
+        plays term:symbol,
+        owns name; # this will be either "S", "K" or "I" (alternative: 3 boolean attributes is_S, is_K, is_I)                
+#### Rules for forming terms (aka program code)
+    rule symbol-as-terms:
+        when {
+            $s isa symbol;
+        } then {
+            (symbol: $s) isa term;
+        };               
+    rule term-term:
+        when {
+            $x isa term;
+            $y isa term;
+        } then {
+            (term-left: $x, term-right: $y) isa term;
+        };        
+#### Rules for individual computation steps
+    rule step-i-x:
+        when {
+            $w (term-left: $v, term-right: $x) isa term;     # w = (vx)
+            $s isa symbol;
+            $s has name "I";                                 # s = I
+            $v (symbol: $s);                                 # v = (s)
+        } then {
+            (in: $w, out: $x) isa computation-step;          # w ⟶ x
+        };               
+    rule step-k-xy:
+        when {
+            $w (term-left: $v, term-right: $y) isa term;     # w = (vy)
+            $v (term-left: $u, term-right: $x) isa term;     # v = (ux)
+            $s isa symbol;
+            $s has name "K";                                 # s = K
+            $u (symbol: $s);                                 # u = (s)
+        } then {
+            (in: $w, out: $y) isa computation-step;          # w ⟶ y
+        };          
+    rule step-s-xyz:
+        when {
+            $w (term-left: $v, term-right: $z) isa term;     # w = (vz)
+            $v (term-left: $u, term-right: $y) isa term;     # v = (uy)
+            $u (term-left: $t, term-right: $x) isa term;     # u = (tx)
+            $s isa symbol;
+            $s has name "S";                                 # s = S
+            $t (symbol: $s) isa term;                        # t = (s)
+            $xz (term-left: $x, term-right: $z) isa term;    # (xz)
+            $yz (term-left: $y, term-right: $z) isa term;    # (yz)
+            $r (term-left: $xz, term-right: $yz) isa term;   # r = ((xz)(yz))
+        } then {
+            (in: $w, out: $r) isa computation-step;          # w ⟶ r
+        };          
+    rule step-left:
+        when {
+            $w (term-left: $x, term-right: $y) isa term;     # w = (xy)
+            (in: $x, out: $z) isa computation-step;          # x ⟶ z
+            $v (term-left: $z, term-right: $y) isa term;     # v = (zy)
+        } then {
+            (in: $w, out: $v) isa computation-step;          # w ⟶ v
+        };        
+    rule step-right:
+        when {
+            $w (term-left: $x, term-right: $y) isa term;     # w = (xy)
+            (in: $y, out: $z) isa computation-step;          # y ⟶ z
+            $v (term-left: $x, term-right: $z) isa term;     # v = (xz)
+        } then {
+            (in: $w, out: $v) isa computation-step;          # w ⟶ v
+        };       
+#### Rules for composing computation steps into sequences       
+    rule steps-as-sequences:
+        when {
+            (in: $x, out: $y) isa computation-step;
+        } then {
+            (in: $x, out: $y) isa computation-sequence;         
+        };        
+    rule sequence-transitivity:
+        when {
+            (in: $x, out: $y) isa computation-sequence;
+            (in: $y, out: $z) isa computation-step;
+        } then {
+            (in: $x, out: $z) isa computation-sequence;           
+        };
