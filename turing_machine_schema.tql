@@ -92,8 +92,8 @@ define
         };        
     rule sequence-transitivity:
         when {
-            (in: $x, out: $y) isa computation-sequence;
-            (in: $y, out: $z) isa computation-step;
+            (in: $x, out: $y) isa computation-step; # Alternative switch order of 'step' and 'sequence'
+            (in: $y, out: $z) isa computation-sequence;
         } then {
             (in: $x, out: $z) isa computation-sequence;           
         };
