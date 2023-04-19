@@ -5,6 +5,7 @@ define
     computation-sequence sub relation,
         relates in,
         relates out; # could merge steps and sequence; but for clarity keep separate 
+    halted sub attribute, value boolean;  
     term sub relation,
         relates symbol,
         relates term-left,
@@ -14,7 +15,8 @@ define
         plays computation-step:in,
         plays computation-step:out,
         plays computation-sequence:in,
-        plays computation-sequence:out;
+        plays computation-sequence:out,
+        owns halted;
     name sub attribute, value string;
     symbol sub entity,
         plays term:symbol,
@@ -82,7 +84,23 @@ define
             $v (term-left: $x, term-right: $z) isa term;     # v = (xz)
         } then {
             (in: $w, out: $v) isa computation-step;          # w ⟶ v
-        };       
+        };
+####  Rules for being a halted state
+    rule has-not-halted:
+        when {
+            $t isa term;
+            $u isa term;
+            (in: $t, out: $u) isa computation-step;
+        } then {
+            $t has halted false;
+        };
+    rule has-halted:
+        when {
+            $t isa term;
+            not { $t has halted false; };
+        } then {
+            $t has halted true;
+        };
 #### Rules for composing computation steps into sequences       
     rule steps-as-sequences:
         when {

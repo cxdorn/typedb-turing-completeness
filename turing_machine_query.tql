@@ -28,16 +28,18 @@
 #get $tt;
 ## WORKS or FAILS
 
-## Example 4 (evaluate the term "II").
+## Example 4 (evaluate the term "II" -> "I").
 ## Check whether the term "II" has has computations steps (it should, "II" -> "I")
-match { 
-    $s isa symbol, has name "I";
-    $t (symbol: $s) isa term;
-    $tt (term-left: $t, term-right: $t) isa term;
-    $u isa term;
-    (in: $tt, out: $u) isa computation-sequence; };
-get $u;
-## WORKS or FAILS (runs forever without limit, but it should not)
+#match { 
+#    $s isa symbol, has name "I";
+#    $t (symbol: $s) isa term;
+#    $tt (term-left: $t, term-right: $t) isa term;
+#    $u isa term;
+#    (in: $tt, out: $u) isa computation-sequence; 
+#    $u has halted true; };
+#get $u; limit 1;
+## without halting: WORKS or FAILS (runs forever without limit, but it should not)
+## with halting and limit: Finds the halted state, but then keeps going?? 
 
 ## Example 5 (evaluate the term "KKK" -> "K").
 #match { 
@@ -61,7 +63,8 @@ get $u;
 #    $3ttt (term-left: $2ttt, term-right: $ttt) isa term;
 #    $u isa term;
 #    (in: $3ttt, out: $u) isa computation-sequence; };
-#get $u; limit 4;
-## limit 2 WORKS or FAILS
-## limit 4 WORKS (runs for 14 sec on M2 Mac) or FAILS sometimes
-## Limit 4 seems to find the full reduction as well
+#    $u has halted true;
+#get $u; limit 1;
+## without halting, limit 2 WORKS or FAILS
+## without halting, limit 4 WORKS (runs for 14 sec on M2 Mac) or FAILS sometimes
+## with halting: doesn't find the halting state withing 60 seconds
