@@ -30,14 +30,14 @@
 
 ## Example 4 (evaluate the term "II" -> "I").
 ## Check whether the term "II" has has computations steps (it should, "II" -> "I")
-#match { 
-#    $s isa symbol, has name "I";
-#    $t (symbol: $s) isa term;
-#    $tt (term-left: $t, term-right: $t) isa term;
-#    $u isa term;
-#    (in: $tt, out: $u) isa computation-sequence; 
-#    $u has halted true; };
-#get $u; limit 1;
+match { 
+    $s isa symbol, has name "I";
+    $t (symbol: $s) isa term;
+    $tt (term-left: $t, term-right: $t) isa term;
+    $u isa term;
+    (in: $tt, out: $u) isa computation-sequence; 
+    $u has halted true; };
+get $u; limit 1;
 ## without halting: WORKS or FAILS (runs forever without limit, but it should not)
 ## with halting and limit: Finds the halted state, but then keeps going?? 
 
